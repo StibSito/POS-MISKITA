@@ -1,18 +1,17 @@
 package model;
 
-public class TicketHeader{
+public class TicketHeader {
 
 	private String num_bol;
-    private String date;
-    private String num_pedido;
-    private String nomCliente;
-    
-    public TicketHeader() {}
-    
+	private String date;
+	private String nomCliente;
+
+	public TicketHeader() {
+	}
+
 	public TicketHeader(String num_bol, String date, String num_pedido, String nomCliente) {
 		this.num_bol = num_bol;
 		this.date = date;
-		this.num_pedido = num_pedido;
 		this.nomCliente = nomCliente;
 	}
 
@@ -32,14 +31,6 @@ public class TicketHeader{
 		this.date = date;
 	}
 
-	public String getNum_pedido() {
-		return num_pedido;
-	}
-
-	public void setNum_pedido(String num_pedido) {
-		this.num_pedido = num_pedido;
-	}
-
 	public String getNomCliente() {
 		return nomCliente;
 	}
@@ -50,12 +41,7 @@ public class TicketHeader{
 
 	@Override
 	public String toString() {
-		return "TicketHeader [num_bol=" + num_bol + ", date=" + date + ", num_pedido=" + num_pedido + ", nomCliente="
-				+ nomCliente + "]";
+		return "TicketHeader [num_bol=" + num_bol + ", date=" + date + ", nomCliente=" + nomCliente + "]";
 	}
-    
-	
-    
-    
-    
+
 }

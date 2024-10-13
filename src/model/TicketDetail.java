@@ -3,16 +3,17 @@ package model;
 public class TicketDetail {
 
 	private String num_bol;
-	private int idProduct;
+	private int idprod;
 	private int quantity;
 	private double price;
 	private double total;
-	
-	public TicketDetail() {}
-	
-	public TicketDetail(String num_bol, int idProduct, int quantity, double price, double total) {
+
+	public TicketDetail() {
+	}
+
+	public TicketDetail(String num_bol, int idprod, int quantity, double price, double total) {
 		this.num_bol = num_bol;
-		this.idProduct = idProduct;
+		this.idprod = idprod;
 		this.quantity = quantity;
 		this.price = price;
 		this.total = total;
@@ -26,12 +27,12 @@ public class TicketDetail {
 		this.num_bol = num_bol;
 	}
 
-	public int getIdProduct() {
-		return idProduct;
+	public int getIdprod() {
+		return idprod;
 	}
 
-	public void setIdProduct(int idProduct) {
-		this.idProduct = idProduct;
+	public void setIdprod(int idprod) {
+		this.idprod = idprod;
 	}
 
 	public int getQuantity() {
@@ -58,10 +59,10 @@ public class TicketDetail {
 		this.total = total;
 	}
 
-	
-	
-	
-	
-
+	@Override
+	public String toString() {
+		return "TicketDetail [num_bol=" + num_bol + ", idprod=" + idprod + ", quantity=" + quantity + ", price=" + price
+				+ ", total=" + total + "]";
+	}
 
 }

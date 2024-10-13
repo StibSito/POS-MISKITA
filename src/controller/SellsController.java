@@ -54,21 +54,20 @@ public class SellsController implements SellsInterface{
             con.setAutoCommit(false); // Desactivar la confirmación automática
 
             // Insertar cabecera boleta
-            String sql1 = "insert into tb_TicketHeader(num_ticket, date_ticket, num_order, clientName) values (?, NOW(), ?, ?)";
+            String sql1 = "insert into tb_TicketHeader(num_ticket, date_ticket,clientName) values (?, NOW(), ?)";
             pst1 = con.prepareStatement(sql1);
 
             cab.setNum_bol(generarNumBoleta());
             pst1.setString(1, cab.getNum_bol());
-            pst1.setString(2, cab.getNum_pedido());
-            pst1.setString(3, cab.getNomCliente());
+            pst1.setString(2, cab.getNomCliente());
             rs = pst1.executeUpdate();
 
             // Insertar detalle boleta
-            String sql2 = "insert into tb_TicketDetail(num_ticket, idProduct, quantity, price, total) values (?, ?, ?, ?, ?)";
+            String sql2 = "insert into tb_TicketDetail(num_ticket, idprod, quantity, price, total) values (?, ?, ?, ?, ?)";
             for (TicketDetail d : det) {
                 pst2 = con.prepareStatement(sql2);
                 pst2.setString(1, cab.getNum_bol()); // mismo dato de la cabecera
-                pst2.setInt(2, d.getIdProduct());
+                pst2.setInt(2, d.getIdprod());
                 pst2.setInt(3, d.getQuantity());
                 pst2.setDouble(4, d.getPrice());
                 pst2.setDouble(5, d.getTotal());

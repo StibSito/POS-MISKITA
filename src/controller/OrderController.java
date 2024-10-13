@@ -42,7 +42,7 @@ public class OrderController {
 		PreparedStatement pst = null;
 		try {
 			con = DatabaseConnection.getConexion();
-			String sql = "INSERT INTO tb_Order(num_order, idClient, clientName, isDelivery, state) VALUES (?, ?, ?, ?, ?)";
+			String sql = "{CAll addOrder(?,?,?,?,?,?,?)}";
 			pst = con.prepareStatement(sql);
 			pst.setString(1, order.getNumOrder());
 			// Manejar el caso en que idCliente puede ser nulo
@@ -51,9 +51,11 @@ public class OrderController {
 			} else {
 				pst.setInt(2, order.getIdCliente());
 			}
-			pst.setString(3, order.getNomCli());
-			pst.setBoolean(4, order.isDelivery());
-			pst.setInt(5, order.getState());
+			pst.setString(3, order.getFecha());
+			pst.setString(4, order.getNomCli());
+			pst.setDouble(5, order.getTotal());
+			pst.setBoolean(6, order.isDelivery());
+			pst.setInt(7, order.getState());
 			pst.executeUpdate();
 		} catch (Exception e) {
 			System.out.println("Error al insertar orden: " + e.getMessage());
@@ -75,10 +77,10 @@ public class OrderController {
 		PreparedStatement pst = null;
 		try {
 			con = DatabaseConnection.getConexion();
-			String sql = "INSERT INTO tb_orderDetail(num_order, product, quantity, total) VALUES (?, ?, ?, ?)";
+			String sql = "INSERT INTO tb_orderDetail(num_order, idprod, quantity, total) VALUES (?, ?, ?, ?)";
 			pst = con.prepareStatement(sql);
 			pst.setString(1, detail.getNumOrder());
-			pst.setString(2, detail.getProduct());
+			pst.setInt(2, detail.getIdproduct());
 			pst.setInt(3, detail.getQuantity());
 			pst.setDouble(4, detail.getTotal());
 			pst.executeUpdate();

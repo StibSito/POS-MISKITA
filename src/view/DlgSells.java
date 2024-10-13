@@ -87,6 +87,8 @@ public class DlgSells extends JDialog implements ActionListener {
 	}
 
 	DecimalFormat df = new DecimalFormat("0.00");
+	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss");
+	LocalDateTime now = LocalDateTime.now();
 	private JLabel lblNewLabel_10;
 	private JComboBox<String> cboEstado;
 	private JComboBox<String> cboDelivery;
@@ -474,7 +476,6 @@ public class DlgSells extends JDialog implements ActionListener {
 			TicketHeader cab = new TicketHeader();
 			cab.setNomCliente(txtNombreCliente.getText());
 			String numPedido = orderControl.generateOrderNumber(); // Obtener el número de pedido de OrderController
-			cab.setNum_pedido(numPedido);
 
 			// Crear la lista de detalles
 			ArrayList<TicketDetail> det = new ArrayList<>();
@@ -482,7 +483,7 @@ public class DlgSells extends JDialog implements ActionListener {
 			// Recorre las filas de la tabla y agrega los detalles
 			for (int i = 0; i < model.getRowCount(); i++) {
 				TicketDetail t = new TicketDetail();
-				t.setIdProduct((int) model.getValueAt(i, 0));
+				t.setIdprod((int) model.getValueAt(i, 0));
 				t.setQuantity((int) model.getValueAt(i, 2));
 				t.setPrice(Double.parseDouble(model.getValueAt(i, 3).toString()));
 				t.setTotal(Double.parseDouble(model.getValueAt(i, 4).toString()));
@@ -508,6 +509,8 @@ public class DlgSells extends JDialog implements ActionListener {
 				String clienteIdText = txtCodigoCliente.getText();
 				order.setIdCliente(clienteIdText.isEmpty() ? 0 : Integer.parseInt(clienteIdText)); // Asume 0 como NULL
 				order.setNomCli(txtNombreCliente.getText());
+				order.setFecha(dtf.format(now));
+				order.setTotal(Double.parseDouble(txtTotalPagar.getText()));
 				order.setDelivery(leerDelivery() == 0); // Ajustar si necesario
 				order.setState(leerEstado()); // Ajustar si necesario
 
@@ -518,7 +521,7 @@ public class DlgSells extends JDialog implements ActionListener {
 				for (int i = 0; i < model.getRowCount(); i++) {
 					OrderDetail orderDetail = new OrderDetail();
 					orderDetail.setNumOrder(numPedido);
-					orderDetail.setProduct((String) model.getValueAt(i, 1)); // Ajustar si necesario
+					orderDetail.setIdproduct((int) model.getValueAt(i, 0)); // Ajustar si necesario
 					orderDetail.setQuantity((int) model.getValueAt(i, 2));
 					orderDetail.setTotal(Double.parseDouble(model.getValueAt(i, 4).toString()));
 
@@ -529,8 +532,7 @@ public class DlgSells extends JDialog implements ActionListener {
 				Client c = new Client();
 				c.setName(txtNombreCliente.getText());
 				int result = sells.processOrder(cab, det);
-				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss");
-				LocalDateTime now = LocalDateTime.now();
+
 				// imprimir la boleta y el formato
 				imprimir();
 				imprimir("\t            NELLY'S BURGER");

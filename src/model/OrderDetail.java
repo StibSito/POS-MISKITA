@@ -2,58 +2,57 @@ package model;
 
 public class OrderDetail {
 
-    private String numOrder;
-    private String product;
-    private int quantity;
-    private double total;
+	private String numOrder;
+	private int idproduct;
+	private int quantity;
+	private double total;
 
-    public OrderDetail() {}
+	public OrderDetail() {
+	}
 
-    public OrderDetail(String numOrder, String product, int quantity, double total) {
-        this.numOrder = numOrder;
-        this.product = product;
-        this.quantity = quantity;
-        this.total = total;
-    }
+	public OrderDetail(String numOrder, int idproduct, int quantity, double total) {
+		this.numOrder = numOrder;
+		this.idproduct = idproduct;
+		this.quantity = quantity;
+		this.total = total;
+	}
 
-    public String getNumOrder() {
-        return numOrder;
-    }
+	public String getNumOrder() {
+		return numOrder;
+	}
 
-    public void setNumOrder(String numOrder) {
-        this.numOrder = numOrder;
-    }
+	public void setNumOrder(String numOrder) {
+		this.numOrder = numOrder;
+	}
 
-    public String getProduct() {
-        return product;
-    }
+	public int getIdproduct() {
+		return idproduct;
+	}
 
-    public void setProduct(String product) {
-        this.product = product;
-    }
+	public void setIdproduct(int idproduct) {
+		this.idproduct = idproduct;
+	}
 
-    public int getQuantity() {
-        return quantity;
-    }
+	public int getQuantity() {
+		return quantity;
+	}
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
+	public void setQuantity(int quantity) {
+		this.quantity = quantity;
+	}
 
-    public double getTotal() {
-        return total;
-    }
+	public double getTotal() {
+		return total;
+	}
 
-    public void setTotal(double total) {
-        this.total = total;
-    }
+	public void setTotal(double total) {
+		this.total = total;
+	}
 
-    @Override
-    public String toString() {
-        return "OrderDetail [numOrder=" + numOrder + ", product=" + product + ", quantity=" + quantity + ", total=" + total + "]";
-    }
+	@Override
+	public String toString() {
+		return "OrderDetail [numOrder=" + numOrder + ", idproduct=" + idproduct + ", quantity=" + quantity + ", total="
+				+ total + "]";
+	}
+
 }
-
-	
-   
-
