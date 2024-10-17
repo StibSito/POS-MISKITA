@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,52 +16,46 @@ import util.DatabaseConnection;
 public class OrderController {
 
 	// Método para generar el número de orden
-	public String generateOrderNumber() {
-		String codigo = "N00001"; // Valor por defecto
-		String sql = "SELECT SUBSTR(MAX(num_order), 2) FROM tb_Order";
-
-		try (Connection con = DatabaseConnection.getConexion();
-				PreparedStatement pst = con.prepareStatement(sql);
-				ResultSet rs = pst.executeQuery()) {
-
-			if (rs.next()) {
-				int maxNum = rs.getInt(1); // Obtener el valor del ResultSet
-				if (maxNum != 0) {
-					codigo = String.format("N%05d", maxNum + 1); // Incrementar y formatear
-				}
-			}
-		} catch (Exception e) {
-			System.out.println("Error en generateOrderNumber: " + e.getMessage());
-		}
-
-		return codigo;
-	}
-
 	// Método para insertar una nueva orden
-	public void addOrder(Order order) {
+	// Método para insertar una nueva orden
+	public int addOrder(Order order) {
 		Connection con = null;
 		PreparedStatement pst = null;
+		ResultSet rs = null;
+		int generatedOrderNumber = 0;
+
 		try {
 			con = DatabaseConnection.getConexion();
-			String sql = "{CAll addOrder(?,?,?,?,?,?,?)}";
+			String sql = "{CAll addOrder(?,?,?,?,?,?)}";
 			pst = con.prepareStatement(sql);
-			pst.setString(1, order.getNumOrder());
-			// Manejar el caso en que idCliente puede ser nulo
+
 			if (order.getIdCliente() == 0) {
-				pst.setNull(2, java.sql.Types.INTEGER);
+				pst.setNull(1, java.sql.Types.INTEGER);
 			} else {
-				pst.setInt(2, order.getIdCliente());
+				pst.setInt(1, order.getIdCliente());
 			}
-			pst.setString(3, order.getFecha());
-			pst.setString(4, order.getNomCli());
-			pst.setDouble(5, order.getTotal());
-			pst.setBoolean(6, order.isDelivery());
-			pst.setInt(7, order.getState());
+			pst.setString(2, order.getFecha());
+			pst.setString(3, order.getNomCli());
+			pst.setDouble(4, order.getTotal());
+			pst.setBoolean(5, order.isDelivery());
+			pst.setInt(6, order.getState());
+
+			// Ejecutar la inserción
 			pst.executeUpdate();
+
+			// Obtener la clave generada
+			pst = con.prepareStatement("SELECT LAST_INSERT_ID()");
+			rs = pst.executeQuery();
+			if (rs.next()) {
+				generatedOrderNumber = rs.getInt(1);
+			}
+
 		} catch (Exception e) {
 			System.out.println("Error al insertar orden: " + e.getMessage());
 		} finally {
 			try {
+				if (rs != null)
+					rs.close();
 				if (con != null)
 					con.close();
 				if (pst != null)
@@ -69,22 +64,25 @@ public class OrderController {
 				System.out.println("Error al cerrar: " + e.getMessage());
 			}
 		}
+
+		return generatedOrderNumber; // Devolver el num_order generado
 	}
 
-	// Método para insertar un detalle de pedido
-	public void addOrderDetail(OrderDetail detail) {
+	public void addOrderDetail(OrderDetail orderDetail) {
 		Connection con = null;
 		PreparedStatement pst = null;
+
 		try {
 			con = DatabaseConnection.getConexion();
-			String sql = "INSERT INTO tb_orderDetail(num_order, idprod, quantity, total) VALUES (?, ?, ?, ?)";
+			String sql = "INSERT INTO tb_orderdetail (num_order, idprod, quantity, total) VALUES (?, ?, ?, ?)";
 			pst = con.prepareStatement(sql);
-			pst.setString(1, detail.getNumOrder());
-			pst.setInt(2, detail.getIdproduct());
-			pst.setInt(3, detail.getQuantity());
-			pst.setDouble(4, detail.getTotal());
-			pst.executeUpdate();
-		} catch (Exception e) {
+			pst.setInt(1, orderDetail.getNumOrder()); // Asegúrate de que este es el num_order correcto
+			pst.setInt(2, orderDetail.getIdproduct());
+			pst.setInt(3, orderDetail.getQuantity());
+			pst.setDouble(4, orderDetail.getTotal());
+
+			pst.executeUpdate(); // Ejecutar la inserción
+		} catch (SQLException e) {
 			System.out.println("Error al insertar detalle de pedido: " + e.getMessage());
 		} finally {
 			try {
@@ -117,7 +115,7 @@ public class OrderController {
 			lista = new ArrayList<Order>();
 			while (rs.next()) {
 				Order o = new Order();
-				o.setNumOrder(rs.getString("num_order"));
+				o.setNumOrder(rs.getInt("num_order"));
 				o.setIdCliente(rs.getInt("idClient"));
 				o.setNomCli(rs.getString("clientNAme"));
 				o.setDelivery(rs.getBoolean("isDelivery"));
@@ -133,14 +131,13 @@ public class OrderController {
 		return lista;
 	}
 
-	public Order orderDetail(String codigo) {
+	public Order orderDetail(int codigo) {
 		String sql = "{CALL orderDetail(?)}";
 		try (Connection conn = DatabaseConnection.getConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
-			stmt.setString(1, codigo);
+			stmt.setInt(1, codigo);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (rs.next()) {
 					Order order = new Order();
-					order.setNumOrder(codigo);
 					order.setNomCli(rs.getString("clientName"));
 					order.setState(rs.getInt("state"));
 					return order;
@@ -161,14 +158,14 @@ public class OrderController {
 			con = DatabaseConnection.getConexion();
 
 			// Sentencia SQL
-			String sql = "{CALL updateOrder(?, ?, ?)}";
+			String sql = "{CALL updateOrder(?, ?, ?)}"; // No necesitas modificar num_order
 
 			pst = con.prepareStatement(sql);
-			pst.setString(1, o.getNumOrder());
+			pst.setInt(1, o.getNumOrder()); // num_order ahora es int
 			pst.setString(2, o.getNomCli());
 			pst.setInt(3, o.getState());
 
-			// Ejecuta
+			// Ejecutar
 			ok = pst.executeUpdate();
 		} catch (Exception e) {
 			System.out.println("Error en actualizar pedido: " + e.getMessage());

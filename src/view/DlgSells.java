@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -48,6 +49,7 @@ import controller.ClientController;
 import controller.OrderController;
 import controller.ProductController;
 import controller.SellsController;
+import interfaces.OrderListener;
 import lib.NumeroLetras;
 import model.Client;
 import model.Order;
@@ -74,18 +76,6 @@ public class DlgSells extends JDialog implements ActionListener {
 	private JButton btnDecremento;
 	private JButton btnIncrementar;
 
-	public static void main(String[] args) {
-		try {
-
-			DlgSells dialog = new DlgSells();
-
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	DecimalFormat df = new DecimalFormat("0.00");
 	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss");
 	LocalDateTime now = LocalDateTime.now();
@@ -106,14 +96,15 @@ public class DlgSells extends JDialog implements ActionListener {
 	private JButton btnBuscar;
 	private JTextField txtDireccion;
 	private JTextField txtTelefono;
+	private DlgOrders ordersFrame;
 
 	public DlgSells() {
 		setBounds(new Rectangle(0, 0, 0, 0));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
 		components();
 		fechaActual();
 		numBoleta();
+		ordersFrame = new DlgOrders(); // Inicializa ordersFrame aquí
 	}
 
 	public void components() {
@@ -240,7 +231,7 @@ public class DlgSells extends JDialog implements ActionListener {
 		cboEstado = new JComboBox<String>();
 		cboEstado.setBounds(930, 655, 129, 21);
 		cboEstado.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		cboEstado.setModel(new DefaultComboBoxModel<String>(new String[] { "PENDIENTE", "EN PREPARACION", "LISTO" }));
+		cboEstado.setModel(new DefaultComboBoxModel<String>(new String[] { "PENDIENTE", "EN PREPARACION" }));
 		contentPanel.add(cboEstado);
 
 		lblNewLabel_11 = new JLabel("Codigo Cliente :");
@@ -351,6 +342,12 @@ public class DlgSells extends JDialog implements ActionListener {
 			actionPerformedBtnSearchId(arg0);
 		}
 
+	}
+
+	private List<OrderListener> listeners = new ArrayList<>();
+
+	public void addOrderListener(OrderListener listener) {
+		listeners.add(listener);
 	}
 
 	public void actionPerformedBtnSearchId(ActionEvent e) {
@@ -472,10 +469,8 @@ public class DlgSells extends JDialog implements ActionListener {
 			double importeSubTotal = 0;
 			String nombre = txtNombreCliente.getText();
 
-			// Crear y configurar la cabecera
 			TicketHeader cab = new TicketHeader();
 			cab.setNomCliente(txtNombreCliente.getText());
-			String numPedido = orderControl.generateOrderNumber(); // Obtener el número de pedido de OrderController
 
 			// Crear la lista de detalles
 			ArrayList<TicketDetail> det = new ArrayList<>();
@@ -483,56 +478,65 @@ public class DlgSells extends JDialog implements ActionListener {
 			// Recorre las filas de la tabla y agrega los detalles
 			for (int i = 0; i < model.getRowCount(); i++) {
 				TicketDetail t = new TicketDetail();
-				t.setIdprod((int) model.getValueAt(i, 0));
-				t.setQuantity((int) model.getValueAt(i, 2));
-				t.setPrice(Double.parseDouble(model.getValueAt(i, 3).toString()));
-				t.setTotal(Double.parseDouble(model.getValueAt(i, 4).toString()));
-				det.add(t);
+				t.setIdprod((int) model.getValueAt(i, 0)); // ID del producto
+				t.setQuantity((int) model.getValueAt(i, 2)); // Cantidad
+				t.setPrice(Double.parseDouble(model.getValueAt(i, 3).toString())); // Precio
+				t.setTotal(Double.parseDouble(model.getValueAt(i, 4).toString())); // Total
+				det.add(t); // Añadir a la lista de detalles
 			}
 
 			// Procesar la venta
 			try {
 				if (nombre.isEmpty()) {
-					error("Agegue el nombre del cliente", txtNombreCliente);
+					error("Agregue el nombre del cliente", txtNombreCliente);
 					return;
 				}
 
 				if (efectivo < total) {
-					error("Ingrese un monto valido", txtEfectivo);
+					error("Ingrese un monto válido", txtEfectivo);
 					return;
 				}
-				// Paso 1: Insertar la orden en la tabla Pedido
-				// Insertar la cabecera del pedido en la tabla Pedido
-				Order order = new Order();
 
-				order.setNumOrder(numPedido);
+				// Paso 1: Insertar la cabecera del pedido en la tabla Pedido
+				Order order = new Order();
 				String clienteIdText = txtCodigoCliente.getText();
 				order.setIdCliente(clienteIdText.isEmpty() ? 0 : Integer.parseInt(clienteIdText)); // Asume 0 como NULL
 				order.setNomCli(txtNombreCliente.getText());
 				order.setFecha(dtf.format(now));
 				order.setTotal(Double.parseDouble(txtTotalPagar.getText()));
-				order.setDelivery(leerDelivery() == 0); // Ajustar si necesario
-				order.setState(leerEstado()); // Ajustar si necesario
+				order.setDelivery(leerDelivery() == 0); // Ajustar si es necesario
+				order.setState(leerEstado()); // Ajustar si es necesario
 
-				orderControl.addOrder(order); // Inserta la cabecera del pedido en la base de datos
+				// Insertar la orden y obtener el número de orden generado
+				int generatedOrderNumber = orderControl.addOrder(order); // Ahora debería devolver el num_order generado
 
-				// Paso 2: Insertar los detalles del pedido en la tabla DetallePedido
-				// Insertar los detalles del pedido en la tabla DetallePedido
-				for (int i = 0; i < model.getRowCount(); i++) {
-					OrderDetail orderDetail = new OrderDetail();
-					orderDetail.setNumOrder(numPedido);
-					orderDetail.setIdproduct((int) model.getValueAt(i, 0)); // Ajustar si necesario
-					orderDetail.setQuantity((int) model.getValueAt(i, 2));
-					orderDetail.setTotal(Double.parseDouble(model.getValueAt(i, 4).toString()));
-
-					orderControl.addOrderDetail(orderDetail); // Inserta el detalle en la base de datos
+				if (generatedOrderNumber <= 0) {
+					System.out.println("No se pudo obtener el número de orden generado.");
+					return; // Manejar el error si no se generó el número de orden
 				}
 
-				// Paso 3: Registrar la boleta
+				// Paso 2: Insertar los detalles del pedido en la tabla DetallePedido
+				for (int i = 0; i < model.getRowCount(); i++) {
+					OrderDetail orderDetail = new OrderDetail();
+					orderDetail.setNumOrder(generatedOrderNumber); // Usar el número de orden generado
+					orderDetail.setIdproduct((int) model.getValueAt(i, 0)); // Ajustar si es necesario
+					orderDetail.setQuantity((int) model.getValueAt(i, 2)); // Cantidad
+					orderDetail.setTotal(Double.parseDouble(model.getValueAt(i, 4).toString())); // Total
+
+					orderControl.addOrderDetail(orderDetail);
+				}
+
 				Client c = new Client();
 				c.setName(txtNombreCliente.getText());
+				// Llamar a listOrders() solo después de asegurarte de que ordersFrame no es
+				// null
+				ordersFrame.listOrders(); // Esto debería funcionar ahora
+				// Notifica a todos los observadores
+				for (OrderListener listener : listeners) {
+					listener.onOrderProcessed();
+				}
+				// Procesar la orden, pasar la cabecera y los detalles
 				int result = sells.processOrder(cab, det);
-
 				// imprimir la boleta y el formato
 				imprimir();
 				imprimir("\t            NELLY'S BURGER");
@@ -648,7 +652,9 @@ public class DlgSells extends JDialog implements ActionListener {
 			} catch (Exception e) {
 				System.out.println("Error al procesar la venta: " + e.getMessage());
 			}
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			mensaje("Debe ingresar los datos" + "\n" + "para procesar la venta");
 		}
 
