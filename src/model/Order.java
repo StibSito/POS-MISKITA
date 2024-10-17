@@ -3,7 +3,7 @@ package model;
 
 public class Order {
 
-    private String numOrder;
+    private int numOrder;
     private int idCliente;
     private String fecha;
     private String nomCli;
@@ -15,7 +15,7 @@ public class Order {
 
     
     
-	public Order(String numOrder, int idCliente, String fecha, String nomCli, double total, boolean delivery,
+	public Order(int numOrder, int idCliente, String fecha, String nomCli, double total, boolean delivery,
 			int state) {
 		this.numOrder = numOrder;
 		this.idCliente = idCliente;
@@ -28,11 +28,11 @@ public class Order {
 
 
 
-	public String getNumOrder() {
+	public int getNumOrder() {
 		return numOrder;
 	}
 
-	public void setNumOrder(String numOrder) {
+	public void setNumOrder(int numOrder) {
 		this.numOrder = numOrder;
 	}
 

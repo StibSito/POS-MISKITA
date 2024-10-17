@@ -2,7 +2,7 @@ package model;
 
 public class OrderDetail {
 
-	private String numOrder;
+	private int numOrder;
 	private int idproduct;
 	private int quantity;
 	private double total;
@@ -10,18 +10,18 @@ public class OrderDetail {
 	public OrderDetail() {
 	}
 
-	public OrderDetail(String numOrder, int idproduct, int quantity, double total) {
+	public OrderDetail(int numOrder, int idproduct, int quantity, double total) {
 		this.numOrder = numOrder;
 		this.idproduct = idproduct;
 		this.quantity = quantity;
 		this.total = total;
 	}
 
-	public String getNumOrder() {
+	public int getNumOrder() {
 		return numOrder;
 	}
 
-	public void setNumOrder(String numOrder) {
+	public void setNumOrder(int numOrder) {
 		this.numOrder = numOrder;
 	}
 
