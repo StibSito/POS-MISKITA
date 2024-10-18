@@ -25,9 +25,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -51,6 +53,7 @@ import controller.ProductController;
 import controller.SellsController;
 import interfaces.OrderListener;
 import lib.NumeroLetras;
+import model.CheckboxTableModel;
 import model.Client;
 import model.Order;
 import model.OrderDetail;
@@ -97,6 +100,9 @@ public class DlgSells extends JDialog implements ActionListener {
 	private JTextField txtDireccion;
 	private JTextField txtTelefono;
 	private DlgOrders ordersFrame;
+	private CheckboxTableModel checkboxModel;
+	private JTable tblCheckTable;
+	private List<OrderListener> listeners = new ArrayList<>();
 
 	public DlgSells() {
 		setBounds(new Rectangle(0, 0, 0, 0));
@@ -260,7 +266,7 @@ public class DlgSells extends JDialog implements ActionListener {
 		tblTabla.setModel(model);
 
 		panel = new JPanel();
-		panel.setBounds(10, 12, 512, 700);
+		panel.setBounds(10, 12, 484, 479);
 		contentPanel.add(panel);
 
 		panel.setLayout(new BorderLayout(0, 0));
@@ -274,7 +280,7 @@ public class DlgSells extends JDialog implements ActionListener {
 
 		btnBuscar = new JButton("buscar");
 		btnBuscar.addActionListener(this);
-		btnBuscar.setBounds(703, 600, 85, 21);
+		btnBuscar.setBounds(694, 600, 94, 21);
 		contentPanel.add(btnBuscar);
 
 		txtDireccion = new JTextField();
@@ -287,9 +293,31 @@ public class DlgSells extends JDialog implements ActionListener {
 		txtTelefono = new JTextField();
 		txtTelefono.setVisible(false);
 		txtTelefono.setEditable(false);
-		txtTelefono.setBounds(588, 632, 96, 19);
+		txtTelefono.setBounds(694, 655, 96, 19);
 		contentPanel.add(txtTelefono);
 		txtTelefono.setColumns(10);
+
+		JScrollPane scrollPane_2 = new JScrollPane();
+		scrollPane_2.setBounds(10, 508, 493, 245);
+		contentPanel.add(scrollPane_2);
+
+		tblCheckTable = new JTable();
+		tblCheckTable.setFillsViewportHeight(true);
+		scrollPane_2.setViewportView(tblCheckTable);
+
+		checkboxModel = new CheckboxTableModel(
+				new Object[] { "Producto", "ENSA", "MAYO", "KET", "MOS", "GOLF", "TAR", "ACE", "AJI" }, 0);
+
+		// Asociar el modelo a la tabla
+		tblCheckTable.setModel(checkboxModel);
+		// Configurar renderizador y editor para las columnas de checkboxes
+		for (int i = 1; i < tblCheckTable.getColumnCount(); i++) {
+			tblCheckTable.getColumnModel().getColumn(i)
+					.setCellRenderer(tblCheckTable.getDefaultRenderer(Boolean.class));
+			tblCheckTable.getColumnModel().getColumn(i).setCellEditor(tblCheckTable.getDefaultEditor(Boolean.class));
+			tblCheckTable.getColumnModel().getColumn(i).setCellEditor(new DefaultCellEditor(new JCheckBox()));
+		}
+
 		ajustarColumnas();
 		formatearCabecera();
 		alinearColumnas();
@@ -343,8 +371,6 @@ public class DlgSells extends JDialog implements ActionListener {
 		}
 
 	}
-
-	private List<OrderListener> listeners = new ArrayList<>();
 
 	public void addOrderListener(OrderListener listener) {
 		listeners.add(listener);
@@ -441,7 +467,7 @@ public class DlgSells extends JDialog implements ActionListener {
 	}
 
 	public void actionPerformedBtnBorrar(ActionEvent arg0) {
-		limpieza(model);
+		limpieza(model, checkboxModel);
 		txtNumBoleta.setText(sells.generarNumBoleta());
 
 	}
@@ -459,6 +485,37 @@ public class DlgSells extends JDialog implements ActionListener {
 			}
 		} else {
 			mensaje("Selecciona una fila para eliminar.");
+		}
+	}
+
+	void procesarCremas(CheckboxTableModel checkboxModel) {
+
+		// Recorre las filas de la tabla de checkboxes
+		for (int i = 0; i < checkboxModel.getRowCount(); i++) {
+			// Lee el nombre del producto de la primera columna
+			String producto = (String) checkboxModel.getValueAt(i, 0);
+
+			// Crea una lista para almacenar las cremas marcadas para este producto
+			ArrayList<String> cremasMarcadas = new ArrayList<>();
+
+			// Recorre las columnas de cremas (a partir de la segunda columna)
+			for (int j = 1; j < checkboxModel.getColumnCount(); j++) {
+				// Si la crema está marcada, agrégala a la lista
+				if ((boolean) checkboxModel.getValueAt(i, j)) {
+					cremasMarcadas.add(checkboxModel.getColumnName(j));
+				}
+			}
+
+			// Imprime el resultado
+			if (!cremasMarcadas.isEmpty() || !producto.isEmpty()) {
+				txtS.append(" " + producto + "  :");
+				for (String crema : cremasMarcadas) {
+					txtS.append(crema + "  ");
+				}
+				// salto de línea después de imprimir todas las cremas
+				imprimir();
+			}
+
 		}
 	}
 
@@ -608,6 +665,16 @@ public class DlgSells extends JDialog implements ActionListener {
 				imprimir("  SON : " + NumeroLetras.texto(parteEntera).toUpperCase() + " CON "
 						+ String.format("%.2f", importeTotal % 1).substring(2) + "/100" + " SOLES");
 
+				if (checkboxModel.getRowCount() > 0) {
+					imprimir("  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ");
+					imprimir(" Nombre : " + nombre);
+					imprimir(" Pedido : Numero " + generatedOrderNumber);
+					procesarCremas(checkboxModel);
+					imprimir("  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ");
+				} else {
+					imprimir("");
+				}
+				limpiarTabla(model, checkboxModel);
 				Font font = new Font("Arial", Font.BOLD, 23); // Ajusta el tamaño de la fuente
 				UIManager.put("OptionPane.messageFont", font);
 				UIManager.put("OptionPane.buttonFont", font);
@@ -700,29 +767,41 @@ public class DlgSells extends JDialog implements ActionListener {
 
 	}
 
-	void limpieza(DefaultTableModel model) {
+	void limpieza(DefaultTableModel model, CheckboxTableModel checkboxModel) {
 		txtTotalPagar.setText("");
 		txtCodigoCliente.setText("");
 		txtNombreCliente.setText("");
 		txtCodigoCliente.requestFocus();
 		txtEfectivo.setText("");
-		limpiarTabla(model);
+		limpiarTabla(model, checkboxModel);
 		txtS.setText("");
 
 	}
 
-	void limpiarTabla(DefaultTableModel model) {
+	void limpiarTabla(DefaultTableModel model, CheckboxTableModel checkboxModel) {
 		// limpiar la tabla
 		while (model.getRowCount() > 0) {
 			model.removeRow(0);
 
 		}
 
+		while (checkboxModel.getRowCount() > 0) {
+			checkboxModel.removeRow(0);
+		}
 	}
 
 	public void addProductToTable(int productId, String productName, double productPrice) {
 		int currentQuantity = 1;
 		double total = currentQuantity * productPrice;
+
+		// Añadir filas a la tabla de cremas
+		for (int i = 0; i < currentQuantity; i++) {
+			Object[] filaCremas = { productName, false, false, false, false, false, false, false, false, false };
+			checkboxModel.addRow(filaCremas);
+
+		}
+
+		
 		for (int i = 0; i < model.getRowCount(); i++) {
 			if ((int) model.getValueAt(i, 0) == productId) {
 				currentQuantity = (int) model.getValueAt(i, 2);
