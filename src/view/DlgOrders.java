@@ -23,6 +23,7 @@ import controller.OrderController;
 import interfaces.OrderListener;
 import model.Order;
 import model.OrderTableCellRenderer;
+import model.OrderTicket;
 
 public class DlgOrders extends JDialog implements ActionListener, OrderListener {
 
@@ -115,7 +116,9 @@ public class DlgOrders extends JDialog implements ActionListener, OrderListener 
 		model = new DefaultTableModel();
 		model.addColumn("NUMERO PEDIDO");
 		model.addColumn("ID CLIENTE");
+		model.addColumn("FECHA");
 		model.addColumn("NOMBRE");
+		model.addColumn("Total");
 		model.addColumn("DELIVERY");
 		model.addColumn("ESTADO");
 		tblTabla.setModel(model);
@@ -157,8 +160,8 @@ public class DlgOrders extends JDialog implements ActionListener, OrderListener 
 				if (selectedRow >= 0) {
 					// Cargamos los datos de la fila seleccionada en los campos de texto
 					txtNumPedido.setText(model.getValueAt(selectedRow, 0).toString());
-					txtNombreCLiente.setText(model.getValueAt(selectedRow, 2).toString());
-					cboEstado.setSelectedItem(model.getValueAt(selectedRow, 4).toString());
+					txtNombreCLiente.setText(model.getValueAt(selectedRow, 3).toString());
+					cboEstado.setSelectedItem(model.getValueAt(selectedRow, 6).toString());
 				}
 			}
 		});
@@ -214,30 +217,31 @@ public class DlgOrders extends JDialog implements ActionListener, OrderListener 
 		txtNumPedido.setText("");
 		txtNombreCLiente.setText("");
 		cboEstado.setSelectedIndex(0);
-		;
 		txtNumPedido.setEditable(false);
 		habilitarEntradas(false);
-		habilitarBotones(true);
+		habilitarBotones(true, true, true); // Habilitar los botones de opciones
 	}
 
 	public void actionPerformedBtnModificar() {
 		tipoOperacion = MODIFICAR;
 		txtNumPedido.setEditable(true);
-		habilitarBotones(false);
+		habilitarBotones(false, false, false); // Deshabilitar todos los botones excepto OK
 		txtNumPedido.requestFocus();
-
 	}
 
 	public void actionPerformedBtnConsultar() {
 		tipoOperacion = CONSULTAR;
 		txtNumPedido.setEditable(true);
-		habilitarBotones(false);
+		habilitarBotones(false, false, false); // Deshabilitar todos los botones excepto Buscar y OK
 		txtNumPedido.requestFocus();
 		btnBuscar.setEnabled(true);
 	}
 
 	public void actionPerformedBtnEliminar() {
-
+		tipoOperacion = ELIMINAR;
+		txtNumPedido.setEditable(true);
+		habilitarBotones(false, false, true); // Solo habilitar el botón de eliminar y OK
+		txtNumPedido.requestFocus();
 	}
 
 	void modificar() {
@@ -260,9 +264,8 @@ public class DlgOrders extends JDialog implements ActionListener, OrderListener 
 				System.out.println("Pedido no encontrado");
 			}
 		} catch (Exception e) {
-			mensaje("ingrese el codigo");
+			mensaje("Ingrese el código");
 		}
-
 	}
 
 	void consultar() {
@@ -271,21 +274,18 @@ public class DlgOrders extends JDialog implements ActionListener, OrderListener 
 			Order order = orderControl.orderDetail(codigo);
 
 			if (order != null) {
-
 				txtNombreCLiente.setText(order.getNomCli());
 				cboEstado.setSelectedIndex(order.getState());
 
 				if (tipoOperacion == MODIFICAR) {
-					habilitarEntradas(false);
+					habilitarEntradas(true);
 					txtNumPedido.setEditable(false);
-					btnBuscar.setEnabled(true);
-					btnOk.setEnabled(true);
+					habilitarBotones(true, false, false);
 					txtNombreCLiente.requestFocus();
 				}
 				if (tipoOperacion == ELIMINAR) {
 					txtNumPedido.setEditable(false);
-					btnBuscar.setEnabled(false);
-					btnOk.setEnabled(true);
+					habilitarBotones(false, false, true);
 				}
 			} else {
 				error("El código " + codigo + " no existe", txtNumPedido);
@@ -303,13 +303,12 @@ public class DlgOrders extends JDialog implements ActionListener, OrderListener 
 		OrderTableCellRenderer color = new OrderTableCellRenderer();
 		model.setRowCount(0);
 
-		for (Order order : orderControl.listOrders()) {
-			Object[] fila = { order.getNumOrder(), order.getIdCliente(), order.getNomCli(),
-					order.isDelivery() ? "SI" : "NO", Estado(order.getState()) };
+		for (OrderTicket order : orderControl.listOrders()) {
+			Object[] fila = { order.getNumOrder(), order.getIdCliente(), order.getFecha(), order.getNomCli(),
+					order.getTotal(), order.isDelivery() ? "SI" : "NO", Estado(order.getState()) };
 			model.addRow(fila);
 		}
 
-		// Configurar el renderizador para todas las columnas
 		for (int i = 0; i < tblTabla.getColumnCount(); i++) {
 			tblTabla.getColumnModel().getColumn(i).setCellRenderer(color);
 		}
@@ -319,17 +318,12 @@ public class DlgOrders extends JDialog implements ActionListener, OrderListener 
 		txtNombreCLiente.setEditable(sino);
 	}
 
-	void habilitarBotones(boolean sino) {
-		if (tipoOperacion == MODIFICAR)
-			btnOk.setEnabled(!sino);
-		else {
-			btnBuscar.setEnabled(sino);
-			btnOk.setEnabled(!false);
-		}
-		btnConsultar.setEnabled(sino);
-		btnModificar.setEnabled(sino);
-		btnEliminar.setEnabled(sino);
-		btnOpciones.setEnabled(!sino);
+	void habilitarBotones(boolean modificarHabilitado, boolean consultarHabilitado, boolean eliminarHabilitado) {
+		btnModificar.setEnabled(modificarHabilitado);
+		btnConsultar.setEnabled(consultarHabilitado);
+		btnEliminar.setEnabled(eliminarHabilitado);
+		btnOpciones.setEnabled(!modificarHabilitado && !consultarHabilitado && !eliminarHabilitado);
+		btnOk.setEnabled(!modificarHabilitado || !consultarHabilitado || !eliminarHabilitado); 
 	}
 
 	int leerEstado() {

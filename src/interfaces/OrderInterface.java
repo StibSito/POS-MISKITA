@@ -4,6 +4,7 @@ import java.util.List;
 
 import model.Order;
 import model.OrderDetail;
+import model.OrderTicket;
 
 public interface OrderInterface {
 
@@ -17,7 +18,7 @@ public interface OrderInterface {
 	public void addOrderDetail(OrderDetail detail);
 
 	//list
-	public List<Order> listOrders();
+	public List<OrderTicket> listOrders();
 
 	//get order Detail
 	public Order orderDetail(String codigo);

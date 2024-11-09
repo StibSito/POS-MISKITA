@@ -12,6 +12,8 @@ import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
@@ -51,6 +53,7 @@ import controller.ClientController;
 import controller.OrderController;
 import controller.ProductController;
 import controller.SellsController;
+import controller.TipoPagoController;
 import interfaces.OrderListener;
 import lib.NumeroLetras;
 import model.CheckboxTableModel;
@@ -60,6 +63,7 @@ import model.OrderDetail;
 import model.Product;
 import model.TicketDetail;
 import model.TicketHeader;
+import model.Tipo;
 
 public class DlgSells extends JDialog implements ActionListener {
 
@@ -103,6 +107,7 @@ public class DlgSells extends JDialog implements ActionListener {
 	private CheckboxTableModel checkboxModel;
 	private JTable tblCheckTable;
 	private List<OrderListener> listeners = new ArrayList<>();
+	private JComboBox<String> cboTipoPagos;
 
 	public DlgSells() {
 		setBounds(new Rectangle(0, 0, 0, 0));
@@ -133,7 +138,7 @@ public class DlgSells extends JDialog implements ActionListener {
 		contentPanel.add(btnProcesar);
 
 		txtCodigoCliente = new JTextField();
-		txtCodigoCliente.setBounds(930, 600, 129, 22);
+		txtCodigoCliente.setBounds(626, 631, 129, 22);
 		contentPanel.add(txtCodigoCliente);
 		txtCodigoCliente.setColumns(10);
 
@@ -145,76 +150,78 @@ public class DlgSells extends JDialog implements ActionListener {
 		scrollPane.setViewportView(txtS);
 
 		btnBorrar = new JButton("Limpiar");
-		btnBorrar.setBounds(800, 496, 125, 40);
+		btnBorrar.setBounds(934, 713, 125, 40);
 		btnBorrar.setIcon(new ImageIcon("E:\\PROYECTO-AED\\ProyectoVentas\\icons\\herramienta-de-limpieza.png"));
 		btnBorrar.addActionListener(this);
 		contentPanel.add(btnBorrar);
 
 		btnEliminar = new JButton("Eliminar ");
-		btnEliminar.setBounds(680, 210, 116, 33);
+		btnEliminar.setBounds(804, 152, 116, 33);
 		btnEliminar.setIcon(new ImageIcon("E:\\PROYECTO-AED\\ProyectoVentas\\icons\\disgusto.png"));
 		btnEliminar.addActionListener(this);
 		contentPanel.add(btnEliminar);
 
 		btnImprimir = new JButton("Imprimir");
-		btnImprimir.setBounds(800, 547, 125, 40);
+		btnImprimir.setBounds(1145, 713, 125, 40);
 		btnImprimir.addActionListener(this);
 		contentPanel.add(btnImprimir);
 
 		txtEfectivo = new JTextField();
-		txtEfectivo.setBounds(1165, 630, 102, 20);
+		txtEfectivo.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		txtEfectivo.setBounds(800, 259, 120, 29);
 		contentPanel.add(txtEfectivo);
 		txtEfectivo.setColumns(10);
 
 		JLabel lblNewLabel_6 = new JLabel("Efectivo : ");
-		lblNewLabel_6.setBounds(1100, 630, 74, 19);
-		lblNewLabel_6.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblNewLabel_6.setBounds(520, 259, 120, 33);
+		lblNewLabel_6.setFont(new Font("Tahoma", Font.PLAIN, 20));
 		contentPanel.add(lblNewLabel_6);
 
 		lblNewLabel_7 = new JLabel("TOTAL  : ");
-		lblNewLabel_7.setBounds(1100, 595, 133, 30);
-		lblNewLabel_7.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblNewLabel_7.setBounds(520, 215, 133, 30);
+		lblNewLabel_7.setFont(new Font("Tahoma", Font.PLAIN, 26));
 		contentPanel.add(lblNewLabel_7);
 
 		txtTotalPagar = new JTextField();
-		txtTotalPagar.setBounds(1160, 600, 108, 20);
+		txtTotalPagar.setHorizontalAlignment(SwingConstants.RIGHT);
+		txtTotalPagar.setBounds(663, 216, 257, 27);
 		txtTotalPagar.setEditable(false);
-		txtTotalPagar.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		txtTotalPagar.setFont(new Font("Tahoma", Font.PLAIN, 26));
 		contentPanel.add(txtTotalPagar);
 		txtTotalPagar.setColumns(10);
 
 		JLabel lblNewLabel_8 = new JLabel("Fecha : ");
-		lblNewLabel_8.setBounds(850, 12, 71, 14);
+		lblNewLabel_8.setBounds(1020, 12, 71, 14);
 		lblNewLabel_8.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		contentPanel.add(lblNewLabel_8);
 
 		txtFecha = new JTextField();
-		txtFecha.setBounds(930, 7, 142, 26);
+		txtFecha.setBounds(1118, 7, 142, 26);
 		txtFecha.setEditable(false);
 		txtFecha.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		contentPanel.add(txtFecha);
 		txtFecha.setColumns(10);
 
 		JLabel lblNewLabel_9 = new JLabel("Nº BOLETA: ");
-		lblNewLabel_9.setBounds(850, 42, 85, 18);
+		lblNewLabel_9.setBounds(1021, 47, 85, 18);
 		lblNewLabel_9.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		contentPanel.add(lblNewLabel_9);
 
 		txtNumBoleta = new JTextField();
-		txtNumBoleta.setBounds(930, 39, 144, 26);
+		txtNumBoleta.setBounds(1116, 43, 144, 26);
 		txtNumBoleta.setEditable(false);
 		txtNumBoleta.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		contentPanel.add(txtNumBoleta);
 		txtNumBoleta.setColumns(10);
 
 		btnIncrementar = new JButton("+");
-		btnIncrementar.setBounds(600, 210, 59, 33);
+		btnIncrementar.setBounds(581, 152, 59, 33);
 		btnIncrementar.setBackground(Color.GREEN);
 		btnIncrementar.addActionListener(this);
 		contentPanel.add(btnIncrementar);
 
 		btnDecremento = new JButton("-");
-		btnDecremento.setBounds(530, 210, 51, 33);
+		btnDecremento.setBounds(520, 152, 51, 33);
 		btnDecremento.setBackground(Color.RED);
 		btnDecremento.addActionListener(this);
 		contentPanel.add(btnDecremento);
@@ -241,18 +248,18 @@ public class DlgSells extends JDialog implements ActionListener {
 		contentPanel.add(cboEstado);
 
 		lblNewLabel_11 = new JLabel("Codigo Cliente :");
-		lblNewLabel_11.setBounds(800, 600, 131, 17);
+		lblNewLabel_11.setBounds(520, 631, 131, 17);
 		lblNewLabel_11.setBackground(SystemColor.windowBorder);
 		lblNewLabel_11.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		contentPanel.add(lblNewLabel_11);
 
 		txtNombreCliente = new JTextField();
-		txtNombreCliente.setBounds(930, 630, 129, 19);
+		txtNombreCliente.setBounds(520, 657, 129, 19);
 		contentPanel.add(txtNombreCliente);
 		txtNombreCliente.setColumns(10);
 
 		scrollPane_1 = new JScrollPane();
-		scrollPane_1.setBounds(525, 76, 400, 129);
+		scrollPane_1.setBounds(520, 13, 400, 129);
 		contentPanel.add(scrollPane_1);
 
 		tblTabla = new JTable();
@@ -280,20 +287,20 @@ public class DlgSells extends JDialog implements ActionListener {
 
 		btnBuscar = new JButton("buscar");
 		btnBuscar.addActionListener(this);
-		btnBuscar.setBounds(694, 600, 94, 21);
+		btnBuscar.setBounds(520, 600, 94, 21);
 		contentPanel.add(btnBuscar);
 
 		txtDireccion = new JTextField();
 		txtDireccion.setVisible(false);
 		txtDireccion.setEditable(false);
-		txtDireccion.setBounds(694, 632, 96, 19);
+		txtDireccion.setBounds(520, 695, 96, 19);
 		contentPanel.add(txtDireccion);
 		txtDireccion.setColumns(10);
 
 		txtTelefono = new JTextField();
 		txtTelefono.setVisible(false);
 		txtTelefono.setEditable(false);
-		txtTelefono.setBounds(694, 655, 96, 19);
+		txtTelefono.setBounds(520, 724, 96, 19);
 		contentPanel.add(txtTelefono);
 		txtTelefono.setColumns(10);
 
@@ -310,7 +317,31 @@ public class DlgSells extends JDialog implements ActionListener {
 
 		// Asociar el modelo a la tabla
 		tblCheckTable.setModel(checkboxModel);
-		// Configurar renderizador y editor para las columnas de checkboxes
+
+		cboTipoPagos = new JComboBox<String>();
+		cboTipoPagos.setBounds(759, 470, 109, 21);
+		contentPanel.add(cboTipoPagos);
+		cboTipoPagos.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					int tipoPago = cboTipoPagos.getSelectedIndex();
+					if (tipoPago == 1) { // Efectivo
+						txtEfectivo.setEnabled(true);
+						txtEfectivo.setEditable(true); // Asegúrate de que sea editable
+						txtEfectivo.setText(""); // Limpia el campo para nuevo ingreso
+					} else { // Yape o Plin, o "Seleccione"
+						txtEfectivo.setEnabled(false);
+						txtEfectivo.setEditable(false);
+						txtEfectivo.setText(""); // Limpia el texto
+					}
+				}
+			}
+		});
+
+		JLabel lblNewLabel_2 = new JLabel("Tipo de Pago :");
+		lblNewLabel_2.setBounds(662, 478, 87, 13);
+		contentPanel.add(lblNewLabel_2);
+
 		for (int i = 1; i < tblCheckTable.getColumnCount(); i++) {
 			tblCheckTable.getColumnModel().getColumn(i)
 					.setCellRenderer(tblCheckTable.getDefaultRenderer(Boolean.class));
@@ -318,12 +349,19 @@ public class DlgSells extends JDialog implements ActionListener {
 			tblCheckTable.getColumnModel().getColumn(i).setCellEditor(new DefaultCellEditor(new JCheckBox()));
 		}
 
+		llenarComboTipos();
 		ajustarColumnas();
-		formatearCabecera();
 		alinearColumnas();
 	}
 
-	void formatearCabecera() {
+	void llenarComboTipos() {
+
+		TipoPagoController pagocon = new TipoPagoController();
+		cboTipoPagos.addItem("-Seleccione-");
+		for (Tipo tipo : pagocon.lstTipoPagos()) {
+			cboTipoPagos.addItem(tipo.getName());
+		}
+
 	}
 
 	void alinearColumnas() {
@@ -392,7 +430,7 @@ public class DlgSells extends JDialog implements ActionListener {
 				mensaje("Cliente no encontrado");
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			mensaje("Ingrese datos");
 		}
 
 	}
@@ -422,6 +460,14 @@ public class DlgSells extends JDialog implements ActionListener {
 				cantidadActual++;
 				double total = cantidadActual * precio;
 
+				// Añadir filas a la tabla de cremas
+				for (int i = 0; i < tblTabla.getRowCount(); i++) {
+					Object[] filaCremas = { model.getValueAt(selectedRow, 1), false, false, false, false, false, false,
+							false, false, false };
+					checkboxModel.addRow(filaCremas);
+
+				}
+
 				model.setValueAt(cantidadActual, selectedRow, 2);
 				model.setValueAt(total, selectedRow, 4);
 				calcularTotal();
@@ -444,8 +490,22 @@ public class DlgSells extends JDialog implements ActionListener {
 				int cantidadActual = (int) model.getValueAt(selectedRow, 2);
 				double precio = Double.parseDouble(model.getValueAt(selectedRow, 3).toString());
 				cantidadActual--;
+				// También eliminar la fila correspondiente en la tabla de cremas
+				for (int i = 0; i < checkboxModel.getRowCount(); i++) {
+					if (checkboxModel.getValueAt(i, 0).equals(model.getValueAt(selectedRow, 1))) {
+						checkboxModel.removeRow(i);
+					}
+
+				}
+				if (cantidadActual < 1) {
+					Object[] filaCremas = { model.getValueAt(selectedRow, 1), false, false, false, false, false, false,
+							false, false, false };
+					checkboxModel.addRow(filaCremas);
+
+				}
 				if (cantidadActual < 1) {
 					cantidadActual = 1;
+
 				}
 				double total = cantidadActual * precio;
 
@@ -480,6 +540,11 @@ public class DlgSells extends JDialog implements ActionListener {
 			int ok = confirmar("Desea eliminar el producto?");
 			if (ok == 0) {
 				model.removeRow(filaSeleccionada);
+				for (int i = 0; i < checkboxModel.getRowCount(); i++) {
+					if (checkboxModel.getValueAt(i, 0).equals(model.getValueAt(i, 1))) {
+						checkboxModel.removeRow(i);
+					}
+				}
 				calcularTotal();
 				mensaje("producto eliminado ");
 			}
@@ -508,7 +573,7 @@ public class DlgSells extends JDialog implements ActionListener {
 
 			// Imprime el resultado
 			if (!cremasMarcadas.isEmpty() || !producto.isEmpty()) {
-				txtS.append(" " + producto + "  :");
+				txtS.append(" " + producto + "  : ");
 				for (String crema : cremasMarcadas) {
 					txtS.append(crema + "  ");
 				}
@@ -521,63 +586,59 @@ public class DlgSells extends JDialog implements ActionListener {
 
 	void procesar() {
 		try {
-			double efectivo = Double.parseDouble(txtEfectivo.getText());
+			double efectivo = 0;
 			double total = Double.parseDouble(txtTotalPagar.getText());
+			int tipoPago = cboTipoPagos.getSelectedIndex();
 			double importeSubTotal = 0;
+
 			String nombre = txtNombreCliente.getText();
 
-			TicketHeader cab = new TicketHeader();
-			cab.setNomCliente(txtNombreCliente.getText());
-
-			// Crear la lista de detalles
-			ArrayList<TicketDetail> det = new ArrayList<>();
-
-			// Recorre las filas de la tabla y agrega los detalles
-			for (int i = 0; i < model.getRowCount(); i++) {
-				TicketDetail t = new TicketDetail();
-				t.setIdprod((int) model.getValueAt(i, 0)); // ID del producto
-				t.setQuantity((int) model.getValueAt(i, 2)); // Cantidad
-				t.setPrice(Double.parseDouble(model.getValueAt(i, 3).toString())); // Precio
-				t.setTotal(Double.parseDouble(model.getValueAt(i, 4).toString())); // Total
-				det.add(t); // Añadir a la lista de detalles
-			}
-
-			// Procesar la venta
 			try {
 				if (nombre.isEmpty()) {
 					error("Agregue el nombre del cliente", txtNombreCliente);
 					return;
 				}
 
-				if (efectivo < total) {
-					error("Ingrese un monto válido", txtEfectivo);
-					return;
+				// Verificar el tipo de pago antes de registrar en la base de datos
+				if (tipoPago == 1) { // Pago en efectivo
+					try {
+						efectivo = Double.parseDouble(txtEfectivo.getText());
+						if (efectivo < total) {
+							error("El monto en efectivo es insuficiente", txtEfectivo);
+							return; // Sale del método si el efectivo es insuficiente
+						}
+					} catch (NumberFormatException e) {
+						error("Debe ingresar un valor numérico válido en el campo de efectivo", txtEfectivo);
+						return;
+					}
 				}
 
-				// Paso 1: Insertar la cabecera del pedido en la tabla Pedido
+				// Insertar la cabecera del pedido en la tabla Pedido
 				Order order = new Order();
 				String clienteIdText = txtCodigoCliente.getText();
-				order.setIdCliente(clienteIdText.isEmpty() ? 0 : Integer.parseInt(clienteIdText)); // Asume 0 como NULL
+				order.setIdCliente(clienteIdText.isEmpty() ? 0 : Integer.parseInt(clienteIdText));
 				order.setNomCli(txtNombreCliente.getText());
-				order.setFecha(dtf.format(now));
-				order.setTotal(Double.parseDouble(txtTotalPagar.getText()));
-				order.setDelivery(leerDelivery() == 0); // Ajustar si es necesario
-				order.setState(leerEstado()); // Ajustar si es necesario
+				order.setDelivery(leerDelivery() == 0);
+				order.setState(leerEstado());
 
-				// Insertar la orden y obtener el número de orden generado
-				int generatedOrderNumber = orderControl.addOrder(order); // Ahora debería devolver el num_order generado
+				int generatedOrderNumber = orderControl.addOrder(order);
+				// insertar a la cabecera
+				TicketHeader cab = new TicketHeader();
+				cab.setIdtipo(cboTipoPagos.getSelectedIndex());
+				cab.setTotal(Double.parseDouble(txtTotalPagar.getText()));
+				cab.setNum_order(generatedOrderNumber);
 
 				if (generatedOrderNumber <= 0) {
 					System.out.println("No se pudo obtener el número de orden generado.");
 					return; // Manejar el error si no se generó el número de orden
 				}
 
-				// Paso 2: Insertar los detalles del pedido en la tabla DetallePedido
+				// Insertar los detalles del pedido en la tabla DetallePedido
 				for (int i = 0; i < model.getRowCount(); i++) {
 					OrderDetail orderDetail = new OrderDetail();
-					orderDetail.setNumOrder(generatedOrderNumber); // Usar el número de orden generado
-					orderDetail.setIdproduct((int) model.getValueAt(i, 0)); // Ajustar si es necesario
-					orderDetail.setQuantity((int) model.getValueAt(i, 2)); // Cantidad
+					orderDetail.setNumOrder(generatedOrderNumber);
+					orderDetail.setIdproduct((int) model.getValueAt(i, 0));
+					orderDetail.setQuantity((int) model.getValueAt(i, 2));
 					orderDetail.setTotal(Double.parseDouble(model.getValueAt(i, 4).toString())); // Total
 
 					orderControl.addOrderDetail(orderDetail);
@@ -587,14 +648,15 @@ public class DlgSells extends JDialog implements ActionListener {
 				c.setName(txtNombreCliente.getText());
 				// Llamar a listOrders() solo después de asegurarte de que ordersFrame no es
 				// null
+
+				// Procesar la orden, pasar la cabecera y los detalles
+				int result = sells.processOrder(cab);
 				ordersFrame.listOrders(); // Esto debería funcionar ahora
 				// Notifica a todos los observadores
 				for (OrderListener listener : listeners) {
 					listener.onOrderProcessed();
 				}
-				// Procesar la orden, pasar la cabecera y los detalles
-				int result = sells.processOrder(cab, det);
-				// imprimir la boleta y el formato
+
 				imprimir();
 				imprimir("\t            NELLY'S BURGER");
 				imprimir("\t               MISKITA MIKUY");
@@ -607,7 +669,7 @@ public class DlgSells extends JDialog implements ActionListener {
 				imprimir();
 				imprimir(" TN\t\t : " + dtf.format(now));
 				imprimir(" Caja\t\t : " + "01");
-				imprimir(" C�digo del Cliente\t : " + txtCodigoCliente.getText());
+				imprimir(" Código del Cliente\t : " + txtCodigoCliente.getText());
 				imprimir(" Nombre \t\t : " + txtNombreCliente.getText());
 				imprimir(" DNI \t\t : " + " ");
 				imprimir(" observacion");
@@ -615,6 +677,7 @@ public class DlgSells extends JDialog implements ActionListener {
 				imprimir();
 				imprimir(" CANT      PRODUCTO\t     P.UNIT\t    TOTAL");
 				imprimir("  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+
 				for (int i = 0; i < model.getRowCount(); i++) {
 					int codigoProductoTable = (int) model.getValueAt(i, 0);
 					Product productoTable = prod.searchProductId(codigoProductoTable);
@@ -626,12 +689,10 @@ public class DlgSells extends JDialog implements ActionListener {
 						importeSubTotal += totalProducto;
 
 						String descripcionProducto = productoTable.getDescription().toUpperCase();
-						// Ajustar la descripción si es muy larga
-						if (descripcionProducto.length() > 17) { // Cambiar 20 por el número de caracteres deseado
-							descripcionProducto = descripcionProducto.substring(0, 17) + "...";
+						if (descripcionProducto.length() > 15) {
+							descripcionProducto = descripcionProducto.substring(0, 15) + "...";
 						}
 
-						// Ajustar el formato de impresión
 						if (totalProducto >= 100) {
 							imprimir(String.format(" %-7d %-17s\t %8s\t%11s", unidadesTable, descripcionProducto,
 									formatearNumero3dig(df.format(precioUnitario)),
@@ -647,6 +708,7 @@ public class DlgSells extends JDialog implements ActionListener {
 						}
 					}
 				}
+
 				imprimir("  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ");
 				double operacion = (importeSubTotal * 100) / 118;
 				double importeIGV = operacion * 0.18;
@@ -658,8 +720,19 @@ public class DlgSells extends JDialog implements ActionListener {
 				showtotals(" SUBTOTAL", importeSubTotal);
 				showtotals(" IGV 18%", importeIGV);
 				showtotals(" TOTAL VENTA", total);
-				showtotals(" EFECTIVO", efectivo);
-				showtotals(" VUELTO", vuelto);
+				if (tipoPago == 1) {
+					showtotals(" EFECTIVO", total);
+					showtotals(" VUELTO", vuelto);
+
+				} else if (tipoPago == 2) {
+					showtotals(" VUELTO", 0.00);
+					showtotals(" TIPO PAGO", "YAPE");
+
+				} else if (tipoPago == 3) {
+					showtotals(" VUELTO", 0.00);
+					showtotals(" TIPO PAGO", "PLIN");
+				}
+
 				imprimir();
 				imprimir();
 				imprimir("  SON : " + NumeroLetras.texto(parteEntera).toUpperCase() + " CON "
@@ -674,6 +747,7 @@ public class DlgSells extends JDialog implements ActionListener {
 				} else {
 					imprimir("");
 				}
+
 				limpiarTabla(model, checkboxModel);
 				Font font = new Font("Arial", Font.BOLD, 23); // Ajusta el tamaño de la fuente
 				UIManager.put("OptionPane.messageFont", font);
@@ -683,12 +757,13 @@ public class DlgSells extends JDialog implements ActionListener {
 
 				// dimensiones de la pantalla
 				Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
+				if (tipoPago == 2 || tipoPago == 3)
+					vuelto = 0;
 				// mensaje HTML
-				String message = "<html><body style='font-family:Arial;font-size:23px;background-color:white;width:100%;height:100%'>"
-						+ "<p>VENTA COMPLETADA</p>"
+				String message = "<html><body style='font-family:Arial;font-size:23px;width:100%;height:100%'>"
+						+ "<p style='color:black'>VENTA COMPLETADA</p>"
 						+ "<p><span style='color:green;'>COBRADO:</span> <span style='color:green;'>"
-						+ df.format(efectivo) + "</span></p>"
+						+ df.format(importeTotal) + "</span></p>"
 						+ "<p><span style='color:red;'>CAMBIO:</span> <span style='color:red;'>" + df.format(vuelto)
 						+ "</span></p>" + "</body></html>";
 
@@ -724,6 +799,11 @@ public class DlgSells extends JDialog implements ActionListener {
 		Exception e) {
 			mensaje("Debe ingresar los datos" + "\n" + "para procesar la venta");
 		}
+
+	}
+
+	private void showtotals(String tittle, String string) {
+		imprimir(tittle + "\t\t   " + "   :\t  " + string);
 
 	}
 
@@ -801,7 +881,6 @@ public class DlgSells extends JDialog implements ActionListener {
 
 		}
 
-		
 		for (int i = 0; i < model.getRowCount(); i++) {
 			if ((int) model.getValueAt(i, 0) == productId) {
 				currentQuantity = (int) model.getValueAt(i, 2);

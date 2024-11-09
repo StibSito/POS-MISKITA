@@ -5,19 +5,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 import model.Order;
 import model.OrderDetail;
+import model.OrderTicket;
 import util.DatabaseConnection;
 
 public class OrderController {
 
-	// Método para generar el número de orden
-	// Método para insertar una nueva orden
-	// Método para insertar una nueva orden
+
 	public int addOrder(Order order) {
 		Connection con = null;
 		PreparedStatement pst = null;
@@ -26,7 +24,7 @@ public class OrderController {
 
 		try {
 			con = DatabaseConnection.getConexion();
-			String sql = "{CAll addOrder(?,?,?,?,?,?)}";
+			String sql = "{CAll addOrder(?,?,?,?)}";
 			pst = con.prepareStatement(sql);
 
 			if (order.getIdCliente() == 0) {
@@ -34,11 +32,9 @@ public class OrderController {
 			} else {
 				pst.setInt(1, order.getIdCliente());
 			}
-			pst.setString(2, order.getFecha());
-			pst.setString(3, order.getNomCli());
-			pst.setDouble(4, order.getTotal());
-			pst.setBoolean(5, order.isDelivery());
-			pst.setInt(6, order.getState());
+			pst.setString(2, order.getNomCli());
+			pst.setBoolean(3, order.isDelivery());
+			pst.setInt(4, order.getState());
 
 			// Ejecutar la inserción
 			pst.executeUpdate();
@@ -96,8 +92,8 @@ public class OrderController {
 		}
 	}
 
-	public List<Order> listOrders() {
-		List<Order> lista = null;
+	public List<OrderTicket> listOrders() {
+		List<OrderTicket> lista = null;
 		Connection con = null;
 
 		PreparedStatement pst = null;
@@ -112,15 +108,17 @@ public class OrderController {
 			pst = con.prepareStatement(sql);
 			rs = pst.executeQuery();
 
-			lista = new ArrayList<Order>();
+			lista = new ArrayList<OrderTicket>();
 			while (rs.next()) {
-				Order o = new Order();
-				o.setNumOrder(rs.getInt("num_order"));
-				o.setIdCliente(rs.getInt("idClient"));
-				o.setNomCli(rs.getString("clientNAme"));
-				o.setDelivery(rs.getBoolean("isDelivery"));
-				o.setState(rs.getInt("state"));
-				lista.add(o);
+				OrderTicket ot = new OrderTicket();
+				ot.setNumOrder(rs.getInt("num_order"));
+				ot.setIdCliente(rs.getInt("idClient"));
+				ot.setFecha(rs.getString("date_ticket"));
+				ot.setNomCli(rs.getString("clientName"));
+				ot.setTotal(rs.getDouble("total"));
+				ot.setDelivery(rs.getBoolean("isDelivery"));
+				ot.setState(rs.getInt("state"));
+				lista.add(ot);
 			}
 
 		} catch (Exception e) {

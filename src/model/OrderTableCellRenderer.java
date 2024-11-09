@@ -19,7 +19,7 @@ public class OrderTableCellRenderer extends DefaultTableCellRenderer {
 		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
 		// Obtener el estado del pedido en la fila actual
-		String estado = table.getValueAt(row, 4).toString(); // Asumiendo que el estado está en la columna 4
+		String estado = table.getValueAt(row, 6).toString(); // Asumiendo que el estado está en la columna 4
 
 		// Cambiar el color de fondo según el estado
 		Color backgroundColor;
